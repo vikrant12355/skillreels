@@ -10,6 +10,7 @@ import {
     Modal,
     ScrollView,
     Platform,
+    Share,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
@@ -129,6 +130,16 @@ function ReelCard({ reel, isActive }: { reel: Reel; isActive: boolean }) {
         setLikeCount(prev => isLiked ? prev - 1 : prev + 1);
     };
 
+    const handleShare = async () => {
+        try {
+            await Share.share({
+                message: `Check out this skill reel: ${reel.title} on SkillUp!`,
+            });
+        } catch (error) {
+            console.log('Error sharing:', error);
+        }
+    };
+
     return (
         <View style={[reelStyles.container, { width: SCREEN_WIDTH, height: SCREEN_HEIGHT - TAB_BAR_HEIGHT }]}>
             {/* Background with solid color */}
@@ -220,7 +231,7 @@ function ReelCard({ reel, isActive }: { reel: Reel; isActive: boolean }) {
                 </TouchableOpacity>
 
                 {/* Save */}
-                <TouchableOpacity style={reelStyles.actionBtn} onPress={() => setIsSaved(!isSaved)}>
+                <TouchableOpacity style={reelStyles.actionBtn} onPress={handleShare} onPress={() => setIsSaved(!isSaved)}>
                     <Ionicons
                         name={isSaved ? 'bookmark' : 'bookmark-outline'}
                         size={28}

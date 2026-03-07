@@ -25,6 +25,7 @@ export default function ReelDetailScreen() {
     const router = useRouter();
     const reel = REELS.find(r => r.id === id);
     const [commentText, setCommentText] = useState('');
+    const [comments, setComments] = useState(MOCK_COMMENTS);
     const [activeSection, setActiveSection] = useState<'insights' | 'transcript' | 'discussion'>('insights');
 
     if (!reel) {
@@ -34,6 +35,19 @@ export default function ReelDetailScreen() {
             </View>
         );
     }
+
+    const handleSendComment = () => {
+        if (!commentText.trim()) return;
+        const newComment = {
+            id: Date.now().toString(),
+            user: 'You',
+            text: commentText,
+            time: 'Just now',
+            likes: 0,
+        };
+        setComments([newComment, ...comments]);
+        setCommentText('');
+    };
 
     return (
         <View style={styles.container}>
@@ -172,7 +186,7 @@ export default function ReelDetailScreen() {
                 {/* Discussion Section */}
                 {activeSection === 'discussion' && (
                     <View style={styles.sectionContent}>
-                        {MOCK_COMMENTS.map((comment) => (
+                        {comments.map((comment) => (
                             <View key={comment.id} style={styles.commentCard}>
                                 <View style={styles.commentHeader}>
                                     <View style={styles.commentAvatar}>
@@ -208,7 +222,7 @@ export default function ReelDetailScreen() {
                             onChangeText={setCommentText}
                         />
                     </View>
-                    <TouchableOpacity style={styles.commentSendBtn}>
+                    <TouchableOpacity style={styles.commentSendBtn} onPress={handleSendComment}>
                         <View
                             style={[styles.commentSendGradient, { backgroundColor: Colors.primary }]}
                         >

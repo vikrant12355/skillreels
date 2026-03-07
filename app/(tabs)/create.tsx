@@ -39,10 +39,22 @@ export default function CreateScreen() {
     };
 
     const handlePublish = () => {
+        if (!title || !description) {
+            Alert.alert('Incomplete', 'Please add a title and description.');
+            return;
+        }
+        
         Alert.alert(
             '🎉 Reel Published!',
             'Your reel has been published and AI is now generating captions and skill tags.',
-            [{ text: 'Great!' }]
+            [{ 
+                text: 'Great!', 
+                onPress: () => {
+                    setTitle('');
+                    setDescription('');
+                    setSelectedTags([]);
+                }
+            }]
         );
     };
 
