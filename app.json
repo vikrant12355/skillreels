@@ -38,6 +38,12 @@
         "projectId": "1622768f-6f56-4ca7-9b8f-ce897c31da39"
       }
     },
-    "owner": "vikrant1539"
+    "owner": "vikrant1539",
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/1622768f-6f56-4ca7-9b8f-ce897c31da39"
+    }
   }
 }

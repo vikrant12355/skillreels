@@ -11,9 +11,11 @@ import {
     ScrollView,
     Platform,
     Share,
+    Image,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
+import { Video, ResizeMode } from 'expo-av';
 import { Colors, Spacing, FontSize, BorderRadius } from '../../constants/theme';
 import { REELS, Reel } from '../../constants/mockData';
 
@@ -118,6 +120,7 @@ function ReelCard({ reel, isActive }: { reel: Reel; isActive: boolean }) {
     const [isSaved, setIsSaved] = useState(reel.isSaved);
     const [showAISummary, setShowAISummary] = useState(false);
     const [likeCount, setLikeCount] = useState(reel.likes);
+    const videoRef = useRef<Video>(null);
     const scaleAnim = useRef(new Animated.Value(1)).current;
     const router = useRouter();
 
@@ -142,22 +145,35 @@ function ReelCard({ reel, isActive }: { reel: Reel; isActive: boolean }) {
 
     return (
         <View style={[reelStyles.container, { width: SCREEN_WIDTH, height: SCREEN_HEIGHT - TAB_BAR_HEIGHT }]}>
-            {/* Background with solid color */}
-            <View
-                style={[StyleSheet.absoluteFill, { backgroundColor: reel.thumbnailColor || Colors.surface }]}
-            />
+            {/* Background with video or solid color */}
+            {reel.videoUrl ? (
+                <Video
+                    ref={videoRef}
+                    source={{ uri: reel.videoUrl }}
+                    style={StyleSheet.absoluteFill}
+                    resizeMode={ResizeMode.COVER}
+                    isLooping
+                    shouldPlay={isActive}
+                    isMuted={false}
+                />
+            ) : (
+                <View
+                    style={[StyleSheet.absoluteFill, { backgroundColor: reel.thumbnailColor || Colors.surface }]}
+                />
+            )}
 
             {/* Floating content overlay */}
             <View style={reelStyles.contentContainer}>
-                {/* Centered video placeholder */}
-                <View style={reelStyles.videoPlaceholder}>
-                    <View
-                        style={[reelStyles.playButtonBg, { backgroundColor: 'rgba(99,102,241,0.2)' }]}
-                    >
-                        <Ionicons name="play" size={48} color="rgba(255,255,255,0.9)" />
+                {!reel.videoUrl && (
+                    <View style={reelStyles.videoPlaceholder}>
+                        <View
+                            style={[reelStyles.playButtonBg, { backgroundColor: 'rgba(99,102,241,0.2)' }]}
+                        >
+                            <Ionicons name="play" size={48} color="rgba(255,255,255,0.9)" />
+                        </View>
+                        <Text style={reelStyles.durationBadge}>{reel.duration}s</Text>
                     </View>
-                    <Text style={reelStyles.durationBadge}>{reel.duration}s</Text>
-                </View>
+                )}
             </View>
 
             {/* Bottom info */}
@@ -285,7 +301,13 @@ export default function HomeScreen() {
         <View style={styles.container}>
             {/* Header overlay */}
             <View style={styles.header}>
-                <Text style={styles.logo}>SkillUp</Text>
+                <View style={styles.logoRow}>
+                    <Image 
+                        source={require('../../assets/logo.jpg')} 
+                        style={styles.logoImage} 
+                    />
+                    <Text style={styles.logo}>SkillUp</Text>
+                </View>
                 <View style={styles.headerTabs}>
                     <Text style={[styles.headerTab, styles.headerTabActive]}>For You</Text>
                     <Text style={styles.headerTab}>Following</Text>
@@ -342,6 +364,16 @@ const styles = StyleSheet.create({
         fontWeight: '800',
         color: Colors.primaryLight,
         letterSpacing: -0.5,
+    },
+    logoRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: Spacing.sm,
+    },
+    logoImage: {
+        width: 32,
+        height: 32,
+        borderRadius: 8,
     },
     headerTabs: {
         flexDirection: 'row',
