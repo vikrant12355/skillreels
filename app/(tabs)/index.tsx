@@ -1,4 +1,4 @@
-import React, { useState, useRef, useCallback } from 'react';
+import React, { useState, useRef, useCallback, useEffect } from 'react';
 import {
     View,
     Text,
@@ -12,12 +12,15 @@ import {
     Platform,
     Share,
     Image,
+    Alert,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { Video, ResizeMode } from 'expo-av';
 import { Colors, Spacing, FontSize, BorderRadius } from '../../constants/theme';
 import { REELS, Reel } from '../../constants/mockData';
+import { auth } from '../../src/config/firebase';
+import { observeAuthState } from '../../src/services/authService';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 const TAB_BAR_HEIGHT = Platform.OS === 'ios' ? 88 : 65;
@@ -288,6 +291,16 @@ function ReelCard({ reel, isActive }: { reel: Reel; isActive: boolean }) {
 
 export default function HomeScreen() {
     const [activeIndex, setActiveIndex] = useState(0);
+    const router = useRouter();
+
+    useEffect(() => {
+        const unsubscribe = observeAuthState((user) => {
+            if (!user) {
+                router.replace('/onboarding');
+            }
+        });
+        return unsubscribe;
+    }, []);
 
     const onViewableItemsChanged = useCallback(({ viewableItems }: any) => {
         if (viewableItems.length > 0) {

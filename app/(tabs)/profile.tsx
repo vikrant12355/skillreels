@@ -7,10 +7,13 @@ import {
     TouchableOpacity,
     Platform,
     Dimensions,
+    Alert,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Colors, Spacing, FontSize, BorderRadius } from '../../constants/theme';
 import { CURRENT_USER, SKILL_TREE, PLAYLISTS, REELS, SkillNode } from '../../constants/mockData';
+import { logoutUser } from '../../src/services/authService';
+import { useRouter } from 'expo-router';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -53,6 +56,16 @@ function formatNumber(num: number): string {
 
 export default function ProfileScreen() {
     const [activeTab, setActiveTab] = useState<'skills' | 'saved' | 'reels'>('skills');
+    const router = useRouter();
+
+    const handleLogout = async () => {
+        const { error } = await logoutUser();
+        if (error) {
+            Alert.alert('Logout Error', error);
+        } else {
+            router.replace('/onboarding');
+        }
+    };
 
     const savedReels = REELS.filter(r => PLAYLISTS.some(p => p.reelIds.includes(r.id)));
 
@@ -61,7 +74,10 @@ export default function ProfileScreen() {
             <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={profileStyles.scrollContent}>
                 {/* Header */}
                 <View style={profileStyles.header}>
-                    <TouchableOpacity>
+                    <TouchableOpacity onPress={handleLogout}>
+                        <Ionicons name="log-out-outline" size={24} color={Colors.error || '#EF4444'} />
+                    </TouchableOpacity>
+                    <TouchableOpacity style={{ marginLeft: Spacing.md }}>
                         <Ionicons name="settings-outline" size={24} color={Colors.textSecondary} />
                     </TouchableOpacity>
                 </View>

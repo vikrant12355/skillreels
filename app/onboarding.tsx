@@ -7,17 +7,25 @@ import {
     TouchableOpacity,
     Dimensions,
     Platform,
+    TextInput,
+    Alert,
+    ActivityIndicator,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { Colors, Spacing, FontSize, BorderRadius } from '../constants/theme';
 import { INTEREST_CATEGORIES, CAREER_GOALS, SKILL_LEVELS } from '../constants/mockData';
+import { loginUser, registerUser } from '../src/services/authService';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
 export default function OnboardingScreen() {
     const router = useRouter();
-    const [step, setStep] = useState(0);
+    const [step, setStep] = useState(-1); // Start with Auth step
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+    const [isLogin, setIsLogin] = useState(true);
+    const [loading, setLoading] = useState(false);
     const [selectedInterests, setSelectedInterests] = useState<string[]>([]);
     const [selectedGoal, setSelectedGoal] = useState('');
     const [selectedLevel, setSelectedLevel] = useState('');
@@ -28,7 +36,28 @@ export default function OnboardingScreen() {
         );
     };
 
+    const handleAuth = async () => {
+        if (!email || !password) {
+            Alert.alert('Error', 'Please enter both email and password');
+            return;
+        }
+
+        setLoading(true);
+        const { user, error } = isLogin 
+            ? await loginUser(email, password)
+            : await registerUser(email, password);
+        
+        setLoading(false);
+
+        if (error) {
+            Alert.alert('Auth Error', error);
+        } else if (user) {
+            setStep(0);
+        }
+    };
+
     const canProgress = () => {
+        if (step === -1) return email.length > 0 && password.length > 5;
         if (step === 0) return selectedInterests.length >= 2;
         if (step === 1) return selectedGoal !== '';
         if (step === 2) return selectedLevel !== '';
@@ -36,7 +65,9 @@ export default function OnboardingScreen() {
     };
 
     const handleNext = () => {
-        if (step < 2) {
+        if (step === -1) {
+            handleAuth();
+        } else if (step < 2) {
             setStep(step + 1);
         } else {
             router.replace('/(tabs)');
@@ -51,7 +82,7 @@ export default function OnboardingScreen() {
 
             {/* Progress bar */}
             <View style={styles.progressBarContainer}>
-                {[0, 1, 2].map((i) => (
+                {[-1, 0, 1, 2].map((i) => (
                     <View
                         key={i}
                         style={[
@@ -72,6 +103,48 @@ export default function OnboardingScreen() {
                 showsVerticalScrollIndicator={false}
                 contentContainerStyle={styles.scrollContent}
             >
+                {/* Step -1: Login / Register */}
+                {step === -1 && (
+                    <View style={styles.stepContainer}>
+                        <View style={styles.stepHeader}>
+                            <Text style={styles.stepEmoji}>{isLogin ? '👋' : '✨'}</Text>
+                            <Text style={styles.stepTitle}>{isLogin ? 'Welcome Back!' : 'Create Account'}</Text>
+                            <Text style={styles.stepSubtitle}>
+                                {isLogin ? 'Sign in to continue your learning journey' : 'Join SkillUp Reels and start learning today'}
+                            </Text>
+                        </View>
+
+                        <View style={styles.authForm}>
+                            <TextInput
+                                style={styles.input}
+                                placeholder="Email Address"
+                                placeholderTextColor={Colors.textTertiary}
+                                value={email}
+                                onChangeText={setEmail}
+                                autoCapitalize="none"
+                                keyboardType="email-address"
+                            />
+                            <TextInput
+                                style={styles.input}
+                                placeholder="Password"
+                                placeholderTextColor={Colors.textTertiary}
+                                value={password}
+                                onChangeText={setPassword}
+                                secureTextEntry
+                            />
+
+                            <TouchableOpacity 
+                                style={styles.toggleAuth} 
+                                onPress={() => setIsLogin(!isLogin)}
+                            >
+                                <Text style={styles.toggleAuthText}>
+                                    {isLogin ? "Don't have an account? Sign Up" : "Already have an account? Log In"}
+                                </Text>
+                            </TouchableOpacity>
+                        </View>
+                    </View>
+                )}
+
                 {/* Step 0: Interests */}
                 {step === 0 && (
                     <View style={styles.stepContainer}>
@@ -209,14 +282,20 @@ export default function OnboardingScreen() {
                     <View
                         style={[styles.nextGradient, { backgroundColor: canProgress() ? Colors.primary : Colors.surfaceLight }]}
                     >
-                        <Text style={[styles.nextText, !canProgress() && { color: Colors.textTertiary }]}>
-                            {step === 2 ? 'Start Learning' : 'Continue'}
-                        </Text>
-                        <Ionicons
-                            name={step === 2 ? 'rocket' : 'arrow-forward'}
-                            size={20}
-                            color={canProgress() ? '#fff' : Colors.textTertiary}
-                        />
+                        {loading ? (
+                            <ActivityIndicator color="#fff" />
+                        ) : (
+                            <>
+                                <Text style={[styles.nextText, !canProgress() && { color: Colors.textTertiary }]}>
+                                    {step === -1 ? (isLogin ? 'Log In' : 'Sign Up') : (step === 2 ? 'Start Learning' : 'Continue')}
+                                </Text>
+                                <Ionicons
+                                    name={step === 2 ? 'rocket' : 'arrow-forward'}
+                                    size={20}
+                                    color={canProgress() ? '#fff' : Colors.textTertiary}
+                                />
+                            </>
+                        )}
                     </View>
                 </TouchableOpacity>
             </View>
@@ -248,6 +327,28 @@ const styles = StyleSheet.create({
     },
     stepContainer: {
         paddingHorizontal: Spacing.xl,
+    },
+    authForm: {
+        marginTop: Spacing.xl,
+        gap: Spacing.md,
+    },
+    input: {
+        backgroundColor: Colors.surfaceElevated,
+        borderWidth: 1,
+        borderColor: Colors.border,
+        borderRadius: BorderRadius.md,
+        padding: Spacing.md,
+        color: Colors.text,
+        fontSize: FontSize.md,
+    },
+    toggleAuth: {
+        padding: Spacing.sm,
+        alignItems: 'center',
+    },
+    toggleAuthText: {
+        color: Colors.primary,
+        fontSize: FontSize.sm,
+        fontWeight: '600',
     },
     stepHeader: {
         alignItems: 'center',
