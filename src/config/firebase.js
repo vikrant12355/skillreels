@@ -5,14 +5,22 @@ import { getFirestore } from "firebase/firestore";
 import { getStorage } from "firebase/storage";
 import { getAnalytics, isSupported } from "firebase/analytics";
 
+import { Platform } from 'react-native';
+
 // Your web app's Firebase configuration
 const firebaseConfig = {
-  apiKey: "AIzaSyA01DvItA03YpQpC3XK0u9ZPIJsFA1pisU",
+  apiKey: Platform.select({
+    android: "AIzaSyBweeDHmWcDQatBrc-dGYm_oXjXVX_I8Mg",
+    default: "AIzaSyA01DvItA03YpQpC3XK0u9ZPIJsFA1pisU"
+  }),
   authDomain: "skillreels1.firebaseapp.com",
   projectId: "skillreels1",
   storageBucket: "skillreels1.firebasestorage.app",
   messagingSenderId: "34379440602",
-  appId: "1:34379440602:web:12ecbc9e0f2653a345a0e3",
+  appId: Platform.select({
+    android: "1:34379440602:android:6ca38799563ff20f45a0e3",
+    default: "1:34379440602:web:12ecbc9e0f2653a345a0e3"
+  }),
   measurementId: "G-0JEWMWNMMN"
 };
 

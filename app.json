@@ -23,15 +23,17 @@
         "monochromeImage": "./assets/android-icon-monochrome.png"
       },
       "predictiveBackGestureEnabled": false,
-      "package": "com.unibuddy.in.SkillUpReels",
-      "googleServicesFile": "./android/app/google-services.json"
+      "package": "com.vikrant.skillreels",
+      "versionCode": 1,
+      "googleServicesFile": "./google-services.json"
     },
     "web": {
       "favicon": "./assets/favicon.png",
       "bundler": "metro"
     },
     "plugins": [
-      "expo-router"
+      "expo-router",
+      "expo-video"
     ],
     "extra": {
       "router": {},
